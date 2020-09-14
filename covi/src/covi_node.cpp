@@ -510,10 +510,6 @@ int main(int argc, char** argv)
       //output_data.pwmL = input_data.cpsL;//+1;
       //output_data.pwmR = input_data.cpsR+1;
 
-      ROS_ERROR("pwm: %d %d",output_data.pwmL,output_data.pwmR);
-      ROS_ERROR("cps: %d %d",input_data.cpsL,input_data.cpsR);
-      ROS_ERROR("wW: %f %f",wL,wR);
-
     }
 
     // SEND CONTROL COMMAND
