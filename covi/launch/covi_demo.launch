@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<launch>
+
+  <include file="$(find covi)/launch/covi.launch"/>
+
+  <include file="$(find realsense2_camera)/launch/pointcloud_d435i.launch"/>
+
+  <include file="$(find rplidar_ros)/launch/rplidar.launch"/>
+  
+  <node name="rviz" pkg="rviz" type="rviz" args="-d $(find covi)/rviz/covi.rviz"/>
+
+</launch>

@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<launch>
+
+  <!-- USB node -->
+  <node pkg="covi" name="covi" type="covi" output="screen" respawn="false"><!-- ns="covi">-->
+    <!--<param name="serialPort" value="/dev/ttyUSB0" />-->
+    <param name="serialPort" value="/dev/ttyACM0" />
+    <!--<param name="serialPort" value="/dev/rfcomm0" />-->
+    <param name="baudRate" value="115200" />
+    <!--<param name="baudRate" value="921600" />-->
+    <param name="publishRate" value="50" />
+
+    <param name="mode" value="1" />
+    <param name="kp" value="0.2" />
+    <param name="ki" value="0.0" />
+    <param name="kd" value="0.0" />
+
+    <param name="maxLinearVel" value="1.2" />
+    <param name="maxAngularVel" value="6.0" />
+    <param name="maxLinearAcc" value="4.0" />
+    <param name="maxAngularAcc" value="16.0" />
+    <param name="maxAngularL" value="10.0" />
+    <param name="maxAngularR" value="10.0" />
+
+    <param name="enableMotors" value="True" />
+    <param name="teleoperation" value="True" />
+  </node>
+
+</launch>

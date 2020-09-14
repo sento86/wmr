@@ -1,0 +1,31 @@
+<?xml version="1.0"?>
+
+<robot name="covi"  
+       xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+       xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+       xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface"
+       xmlns:xacro="http://wiki.ros.org/xacro">
+
+  <xacro:arg name="use_nominal_extrinsics" default="false" />
+
+  <xacro:include filename="$(find covi_description)/urdf/covi_hardware.urdf.xacro" />
+  <xacro:include filename="$(find covi_description)/urdf/covi_body.urdf.xacro" />
+  <xacro:include filename="$(find covi_description)/urdf/covi_calibration.xacro" />
+  <xacro:include filename="$(find covi_description)/urdf/covi_kinect.urdf.xacro" />
+
+  <xacro:property name="M_PI" value="3.14159"/>
+  <xacro:property name="SCALE" value="0.0254"/>
+
+  <!-- Body of COVI, with plates, standoffs and Create (including sim sensors) -->
+  <xacro:covi_body/>
+  
+  <!-- Kinect frames and mounting (includes simulation) -->
+  <!--<xacro:covi_kinect/>-->
+
+  <!-- Intel Realsene D435i frames and mounting -->
+  <xacro:include filename="$(find covi_description)/urdf/d435i_camera.urdf.xacro" />
+
+  <!-- RPLidar frames and mounting -->
+  <xacro:include filename="$(find covi_description)/urdf/rplidar.urdf.xacro" />
+
+</robot>

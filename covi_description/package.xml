@@ -1,0 +1,15 @@
+<package>
+  <name>covi_description</name>
+  <version>2.3.1</version>
+  <description>The covi_description provides a complete 3D model of the COVI for simulation and visualization.</description>
+  <maintainer email="turtlebot@osrfoundation.com">OSRF</maintainer>
+  <license>BSD</license>
+  <url type="website">http://ros.org/wiki/create_description</url>
+  <url type="repository">https://github.com/turtlebot/turtlebot_create</url>
+  <url type="bugtracker">https://github.com/turtlebot/turtlebot_create/issues</url>
+  <author email="turtlebot@willowgarage.com">Willow</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <run_depend>urdf</run_depend>
+  <run_depend>xacro</run_depend>
+</package>

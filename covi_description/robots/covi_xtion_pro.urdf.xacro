@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+
+<robot name="covi"
+    xmlns:sensor="http://playerstage.sourceforge.net/gazebo/xmlschema/#sensor"
+    xmlns:controller="http://playerstage.sourceforge.net/gazebo/xmlschema/#controller"
+    xmlns:interface="http://playerstage.sourceforge.net/gazebo/xmlschema/#interface">
+
+<!--
+COVI with ASUS Xtion PRO camera, instead of Kinect
+-->
+    
+    <!-- Included URDF Files -->
+    <xacro:include filename="$(find covi_description)/urdf/covi_body.urdf.xacro" />
+    <xacro:include filename="$(find covi_description)/urdf/covi_hardware.urdf.xacro" />
+    <xacro:include filename="$(find covi_description)/urdf/covi_calibration.xacro" />
+    <xacro:include filename="$(find covi_description)/urdf/asus_xtion_pro.urdf.xacro" />
+
+    <!-- Body of COVI, with plates, standoffs and Create (including sim sensors) -->
+    <xacro:covi_body/>
+
+    <!-- ASUS Xtion PRO frames and mounting (includes simulation) -->
+    <xacro:covi_xtion_pro/> 
+</robot>

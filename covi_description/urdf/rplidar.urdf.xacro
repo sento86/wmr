@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<robot name="rplidar" xmlns:xacro="http://ros.org/wiki/xacro">
+
+  <xacro:arg name="gazebo" default="false"/>
+
+  <!-- RPLidar -->
+  <xacro:include filename="$(find covi_description)/sensors/rplidar/rplidar.xacro" />
+
+  <xacro:rplidar name="rplidar" parent="base_footprint">
+      <origin xyz="0.0 0.0 0.245" rpy="0 0 0" />
+  </xacro:rplidar>
+
+</robot>
