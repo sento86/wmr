@@ -159,7 +159,7 @@ add_dependencies(covi ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_genc
 
 #add_library(summit_plugin src/covi.cpp)
 #target_link_libraries(covi_plugin ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(covi ${catkin_LIBRARIES} cifx pthread rt)
+target_link_libraries(covi ${catkin_LIBRARIES})# cifx pthread rt)
 #target_link_libraries(nethat ${catkin_LIBRARIES} cifx pthread rt)
 #############
 ## Install ##
