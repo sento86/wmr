@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(covi)
+add_compile_options(-std=c++11)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -129,10 +130,11 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} /usr/include/cifx)
 
 link_directories(
   #${GAZEBO_LIBRARY_DIRS}
+  /usr/lib
 )
 
 ## Declare a cpp library
@@ -143,12 +145,13 @@ link_directories(
 ## Declare a cpp executable
 # add_executable(summit_gazebo_plugin_node src/summit_gazebo_plugin_node.cpp)
 add_executable(covi src/covi_node.cpp)
+add_executable(nethat src/cifxlinuxsample.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
 # add_dependencies(summit_gazebo_plugin_node summit_gazebo_plugin_generate_messages_cpp)
 add_dependencies(covi ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg)
-
+add_dependencies(nethat ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_gencfg)
 ## Specify libraries to link a library or executable target against
 # target_link_libraries(covi_gazebo_plugin_node
 #   ${catkin_LIBRARIES}
@@ -156,8 +159,8 @@ add_dependencies(covi ${PROJECT_NAME}_generate_messages_cpp ${PROJECT_NAME}_genc
 
 #add_library(summit_plugin src/covi.cpp)
 #target_link_libraries(covi_plugin ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-target_link_libraries(covi ${catkin_LIBRARIES})
-
+target_link_libraries(covi ${catkin_LIBRARIES} cifx pthread rt)
+target_link_libraries(nethat ${catkin_LIBRARIES} cifx pthread rt)
 #############
 ## Install ##
 #############
