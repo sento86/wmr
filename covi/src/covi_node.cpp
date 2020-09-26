@@ -26,7 +26,7 @@
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
 
-//#define ARDUINO
+#define ARDUINO
 #define IGNORE_CRC
 
 #ifndef ARDUINO
