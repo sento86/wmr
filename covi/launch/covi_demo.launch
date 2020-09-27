@@ -3,9 +3,15 @@
 
   <include file="$(find covi)/launch/covi.launch"/>
 
-  <include file="$(find realsense2_camera)/launch/pointcloud_d435i.launch"/>
+  <!--<include file="$(find realsense2_camera)/launch/pointcloud_d435i.launch"/>-->
+  <include file="$(find covi)/launch/pointcloud_d435i.launch"/>
 
-  <include file="$(find rplidar_ros)/launch/rplidar.launch"/>
+  <!--<include file="$(find rplidar_ros)/launch/rplidar.launch"/>-->
+  <include file="$(find covi)/launch/rplidar.launch"/>
+  
+  <include file="$(find covi)/launch/laser_filter.launch"/>
+  
+  <!--<include file="$(find covi)/launch/move_base.launch"/>-->
   
   <node name="rviz" pkg="rviz" type="rviz" args="-d $(find covi)/rviz/covi.rviz"/>
 

@@ -17,6 +17,7 @@ find_package(catkin REQUIRED COMPONENTS
   control_toolbox
   dynamic_reconfigure
   message_generation
+  move_base
 )
 
 ## System dependencies are found with CMake's conventions
@@ -120,7 +121,7 @@ generate_dynamic_reconfigure_options(
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES covi_plugin
-  CATKIN_DEPENDS control_toolbox geometry_msgs sensor_msgs nav_msgs std_msgs roscpp rospy tf dynamic_reconfigure message_runtime
+  CATKIN_DEPENDS control_toolbox geometry_msgs sensor_msgs nav_msgs std_msgs roscpp rospy tf dynamic_reconfigure message_runtime move_base
 )
 
 ###########
@@ -130,7 +131,7 @@ catkin_package(
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 # include_directories(include)
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} /usr/include/cifx)
+include_directories(include include/cifx ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS} /usr/include/cifx)
 
 link_directories(
   #${GAZEBO_LIBRARY_DIRS}

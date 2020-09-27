@@ -25,6 +25,8 @@
 #include <geometry_msgs/TwistStamped.h>
 #include <tf/tf.h>
 #include <tf/transform_broadcaster.h>
+#include <sensor_msgs/LaserScan.h>
+#include <sensor_msgs/PointCloud2.h>
 
 #define ARDUINO
 #define IGNORE_CRC
@@ -131,8 +133,14 @@ char base_link[] = "/base_footprint";
 char odom[] = "/odom";
 
 nav_msgs::Odometry odom_msg;
+//#define TWIST_STAMPED
+#ifdef TWIST_STAMPED
+geometry_msgs::TwistStamped twist_msg;
+#else
 geometry_msgs::Twist twist_msg;
-geometry_msgs::TwistStamped twistStp_msg;
+#endif
+sensor_msgs::LaserScan laser_msg;
+sensor_msgs::PointCloud2 points_msg;
 
 geometry_msgs::TransformStamped t;
 
@@ -651,6 +659,17 @@ int32_t ChannelDemo()
 
 #endif
 
+#ifdef TWIST_STAMPED
+/** Callback for joy topic **/
+void twist_cb(const geometry_msgs::TwistStamped::ConstPtr& msg)
+{
+    twist_msg = *msg;
+    vref = twist_msg.twist.linear.x;
+    wref = twist_msg.twist.angular.z;
+    //if(vref<0.0)
+    //  wref = -wref;
+}
+#else
 /** Callback for joy topic **/
 void twist_cb(const geometry_msgs::Twist::ConstPtr& msg)
 {
@@ -660,15 +679,17 @@ void twist_cb(const geometry_msgs::Twist::ConstPtr& msg)
     //if(vref<0.0)
     //  wref = -wref;
 }
-
-/** Callback for joy topic **/
-void twistStp_cb(const geometry_msgs::TwistStamped::ConstPtr& msg)
+#endif
+/** Callback for laser topic **/
+void laserScan_cb(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
-    twistStp_msg = *msg;
-    vref = twistStp_msg.twist.linear.x;
-    wref = twistStp_msg.twist.angular.z;
-    //if(vref<0.0)
-    //  wref = -wref;
+    laser_msg = *msg;
+}
+
+/** Callback for points topic **/
+void pointCloud_cb(const sensor_msgs::PointCloud2::ConstPtr& msg)
+{
+    points_msg = *msg;
 }
 
 int main(int argc, char** argv)
@@ -680,9 +701,14 @@ int main(int argc, char** argv)
   // Get parameters from server
   getParameters(nh, np, &config);
 
-  ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>( "odom",0);
-  //ros::Subscriber cmd_vel_sub = nh.subscribe("cmd_vel", 10, twist_cb);
-  ros::Subscriber cmd_vel_sub = nh.subscribe("cmd_vel", 10, twistStp_cb);
+  ros::Publisher odom_pub = nh.advertise<nav_msgs::Odometry>("odom", 0);
+  #ifdef TWIST_STAMPED
+  ros::Subscriber cmd_vel_sub = nh.subscribe("cmd_vel", 10, twist_cb);
+  #else
+  ros::Subscriber cmd_vel_sub = nh.subscribe("cmd_vel", 10, twist_cb);
+  #endif
+  ros::Subscriber laser_sub = nh.subscribe("scan", 10, laserScan_cb);
+  ros::Subscriber points_sub = nh.subscribe("/camera/depth/color/points", 10, pointCloud_cb);
 
   tf::TransformBroadcaster broadcaster;
 
@@ -781,8 +807,6 @@ int main(int argc, char** argv)
   //output_data.cpsL = int16_t((input_data.pwmL/rpm2pwm)/cps2rads);
   //output_data.cpsR = int16_t((input_data.pwmR/rpm2pwm)/cps2rads);
 
-  time_old = ros::Time::now();
-
   ros::Rate loop_rate(config.publishRate); //Desired frequency in Hz
   
 #ifdef NETHAT
@@ -799,6 +823,8 @@ int main(int argc, char** argv)
   }
 
 #endif  
+
+  time_old = ros::Time::now(); // Save current time for control period
   
   // Loop
   while (ros::ok())
@@ -840,9 +866,9 @@ int main(int argc, char** argv)
     if (new_message ==1 )
     {
 
-      time_now = ros::Time::now();
-      dt = (time_now - time_old).toSec();
-      time_old = time_now;
+      time_now = ros::Time::now(); // Save current time for control period
+      dt = (time_now - time_old).toSec(); // Time delay is the control period
+      time_old = time_now; // Update previous time with current timestamp
 
       wL = float(input_data.cpsL)*cps2rads;//2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
       //wL = -wL; // Opposite sign
