@@ -28,7 +28,7 @@
 #include <sensor_msgs/LaserScan.h>
 #include <sensor_msgs/PointCloud2.h>
 
-#define ARDUINO
+//#define ARDUINO
 #define IGNORE_CRC
 
 #ifndef ARDUINO
