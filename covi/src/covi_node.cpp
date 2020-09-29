@@ -48,6 +48,7 @@
         #include <sys/mman.h>
         #include <time.h>
         #include <signal.h>
+        //#include "mariadb/mysql.h"
 
         #define CIFX_DEV "cifX0"
 
@@ -133,7 +134,7 @@ char base_link[] = "/base_footprint";
 char odom[] = "/odom";
 
 nav_msgs::Odometry odom_msg;
-//#define TWIST_STAMPED
+#define TWIST_STAMPED
 #ifdef TWIST_STAMPED
 geometry_msgs::TwistStamped twist_msg;
 #else
@@ -145,6 +146,11 @@ sensor_msgs::PointCloud2 points_msg;
 geometry_msgs::TransformStamped t;
 
 ros::Time time_now, time_old;
+
+// PROEMISA DEFINITIONS
+CIFXHANDLE hChannel = NULL;
+CIFXHANDLE hDriver = NULL;
+int32_t    lRet;
 
 struct struct_config
 {
@@ -441,17 +447,34 @@ void DisplayDriverInformation (void)
 	  int testval 			  = 0;
 	  uint8_t  sendPointer    = 0;
 	  uint8_t  recvPointer     = 0;
-	  int rcvVal = 0;
-	  int32_t rcvVal32 = 0;
-	  uint8_t rcvVal8 = 0;
-	  uint8_t rcvVal82 = 0;
+	  	  
+	  //  Señales comunicacion con PLC
+	  char	   	Color_Ruedas	  ='0';
+	  char	   	Color_Barra	  ='0';
+	  char	   	Color_Circ	  ='0';
+	  char		Ctrl_Char_Ruedas = Color_Ruedas;
+	  char		Ctrl_Char_Barra = Color_Barra;
+	  char		Ctrl_Char_Circ = Color_Circ;
+	  uint8_t PLC_ByteVida = 0;
+	  uint8_t PLC_Senal_Apagado = 0;
+	  uint8_t Byte6_IN = 0;
+	  int16_t Word1_IN = 0;
+	  int16_t Word2_IN = 0;
+	  int16_t Word3_IN = 0;
+	  int16_t Word4_IN = 0;
+	  int16_t Word5_IN = 0;
+	  int16_t Vel_MotorLH = 0;
+	  int16_t Vel_MotorRH = 0;
+	  int16_t DiametroRuedas = 0;
+	  int16_t DistanciaRuedas = 0;
+
 
 	  void send_Byte(uint8_t valor){
 		  abSendData[sendPointer] = valor & 0xFF;
 		  sendPointer = sendPointer + 1;
 	  }
 	  
-	  void send_Word(int valor){
+	  void send_Word(int16_t valor){
 		  abSendData[sendPointer    ] = (valor >> 8) & 0xFF;
 		  abSendData[sendPointer + 1] =  valor & 0xFF;
 		  sendPointer = sendPointer + 2;
@@ -470,8 +493,8 @@ void DisplayDriverInformation (void)
 		  return valor;
 	  }
 	  
-	  int rcv_Word(){
-		  int valor = 0;
+	  int16_t rcv_Word(){
+		  int16_t valor = 0;
 		  valor = valor |= (abRecvData[recvPointer    ]) << 8;
 		  valor = valor |= (abRecvData[recvPointer + 1]);
 		  recvPointer = recvPointer + 2;
@@ -488,170 +511,7 @@ void DisplayDriverInformation (void)
 		  return valor;
 	  }
 
-int32_t ChannelDemo()
-{
-#ifdef DEBUG
-	printf("%s() called\n", __FUNCTION__);
-#endif
-  CIFXHANDLE hDriver = NULL;
-  int32_t    lRet    = xDriverOpen(&hDriver);
 
-  printf("---------- Communication Channel demo ----------\r\n");
-
-  if(CIFX_NO_ERROR == lRet)
-  {
-    /* Driver/Toolkit successfully opened */
-    CIFXHANDLE hChannel = NULL;
-    lRet = xChannelOpen(NULL, CIFX_DEV, 0, &hChannel);
-
-    if(CIFX_NO_ERROR != lRet)
-    {
-      printf("Error opening Channel!");
-
-    } else
-    {
-    
-      CHANNEL_INFORMATION tChannelInfo = {{0}};
-
-      /* Channel successfully opened, so query basic information */
-      if( CIFX_NO_ERROR != (lRet = xChannelInfo(hChannel, sizeof(CHANNEL_INFORMATION), &tChannelInfo)))
-      {
-        printf("Error querying system information block\r\n");
-      } else
-      {
-        printf("Communication Channel Info:\r\n");
-        printf("Device Number    : %lu\r\n",(long unsigned int)tChannelInfo.ulDeviceNumber);
-        printf("Serial Number    : %lu\r\n",(long unsigned int)tChannelInfo.ulSerialNumber);
-        printf("Firmware         : %s\r\n", tChannelInfo.abFWName);
-        printf("FW Version       : %u.%u.%u build %u\r\n", 
-                tChannelInfo.usFWMajor,
-                tChannelInfo.usFWMinor,
-                tChannelInfo.usFWRevision,
-                tChannelInfo.usFWBuild);
-        printf("FW Date          : %02u/%02u/%04u\r\n", 
-                tChannelInfo.bFWMonth,
-                tChannelInfo.bFWDay,
-                tChannelInfo.usFWYear);
-
-        printf("Mailbox Size     : %lu\r\n",(long unsigned int)tChannelInfo.ulMailboxSize);
-      }
-      
-      
-/*	       
-      // Read and write I/O data (32Bytes). Output data will be incremented each cycle
-      uint8_t  abSendData[32] = {0};
-      uint8_t  abRecvData[32] = {0};
-      uint8_t  fRunning       = 1;
-      uint32_t ulState        = 0;        // Actual state returned
-      uint8_t  bIdx           = 0;
-	  int testval 			  = 0;
-	  uint8_t  sendPointer    = 0;
-	  uint8_t  recvPointer     = 0;
-	  int rcvVal = 0;
-	  int32_t rcvVal32 = 0;
-	  uint8_t rcvVal8 = 0;
-	  uint8_t rcvVal82 = 0;
- 
-	  void send_Byte(uint8_t valor){
-		  abSendData[sendPointer] = valor & 0xFF;
-		  sendPointer = sendPointer + 1;
-	  }
-	  
-	  void send_Word(int valor){
-		  abSendData[sendPointer    ] = (valor >> 8) & 0xFF;
-		  abSendData[sendPointer + 1] =  valor & 0xFF;
-		  sendPointer = sendPointer + 2;
-	  }
-	  void send_DWord(int32_t valor){
-		  abSendData[sendPointer	] = (valor >> 24) & 0xFF;
-		  abSendData[sendPointer + 1] = (valor >> 16) & 0xFF;
-		  abSendData[sendPointer + 2] = (valor >> 8)  & 0xFF;
-		  abSendData[sendPointer + 3] =  valor & 0xFF;
-		  sendPointer = sendPointer + 4;
-	  }
-	  uint8_t rcv_Byte(){
-		  uint8_t valor = 0;
-		  valor = abRecvData[recvPointer];
-		  recvPointer = recvPointer + 1;
-		  return valor;
-	  }
-	  
-	  int rcv_Word(){
-		  int valor = 0;
-		  valor = valor |= (abRecvData[recvPointer    ]) << 8;
-		  valor = valor |= (abRecvData[recvPointer + 1]);
-		  recvPointer = recvPointer + 2;
-		  return valor;
-	  }
-	  
-	  int32_t rcv_DWord(){
-		  int32_t valor = 0;
-		  valor = (valor |= (abRecvData[recvPointer    ])) << 8;
-		  valor = (valor |= (abRecvData[recvPointer + 1])) << 8;
-		  valor = (valor |= (abRecvData[recvPointer + 2])) << 8;
-		  valor =  valor |= (abRecvData[recvPointer + 3]);
-		  recvPointer = recvPointer + 4;
-		  return valor;
-	  }
-*/	  
-      while( fRunning ){
-        /* Wait for communication to be established */
-        if( CIFX_DEV_NO_COM_FLAG == ( lRet = xChannelBusState( hChannel, CIFX_BUS_STATE_ON, &ulState, 10 ) ) ){
-          printf("Waiting for Bus communication!\r\n");
-        }
-        else{
-          /* Read Data from network */
-          if(CIFX_NO_ERROR != (lRet = xChannelIORead(hChannel, 0, 0, sizeof(abRecvData), abRecvData, 10))){
-            printf("Error reading IO Data area!\r\n");
-          } else{
-            printf("IO Read Data:");
-			recvPointer  = 0;
-			
-			rcvVal = rcv_Word();
-			rcvVal32 = rcv_DWord();
-			rcvVal8 = rcv_Byte();
-			rcvVal82 = rcv_Byte();
-			
-			
-            DumpData(abRecvData, sizeof(abRecvData));
-            
-            /* Write Data to network */
-            if(CIFX_NO_ERROR != (lRet = xChannelIOWrite(hChannel, 0, 0, sizeof(abSendData), abSendData, 10))){
-              printf("Error writing to IO Data area!\r\n");
-            } else{
-              printf("IO Write Data:");
-			  sendPointer = 0;
-			  
-			  
-			  send_Word(testval);
-			  send_Word(testval);
-			  send_DWord(testval * 1932);
-			  send_Word(rcvVal);
-			  send_DWord(rcvVal32);
-			  send_Byte(rcvVal8);
-			  send_Byte(rcvVal82);
-			  testval++;
-			  
-              DumpData(abSendData, sizeof(abSendData));
-			  
-			  
-			  
-			  //memset(abSendData, 0, sizeof(abSendData));
-              //memset(abSendData, bIdx++, 3);
-            }
-          }
-        }
-        sleep( 1 );
-      }
-
-      xChannelClose(hChannel);
-    }
-
-    xDriverClose(hDriver);
-  }
-  return lRet;
-
-}
 
 #ifdef __cplusplus
 }
@@ -794,8 +654,58 @@ int main(int argc, char** argv)
 #endif
 
   /* First of all initialize toolkit */
-  int32_t lRet = cifXDriverInit(&init);
+  int32_t global_lRet = cifXDriverInit(&init);
 
+  if(CIFX_NO_ERROR == global_lRet){
+
+  #ifdef DEBUG
+	printf("%s() called\n", __FUNCTION__);
+  #endif
+  //CIFXHANDLE hDriver = NULL;
+  lRet    = xDriverOpen(&hDriver);
+
+  printf("---------- Communication Channel demo ----------\r\n");
+
+  if(CIFX_NO_ERROR == lRet)
+  {
+    /* Driver/Toolkit successfully opened */
+    //CIFXHANDLE hChannel = NULL;
+    lRet = xChannelOpen(NULL, CIFX_DEV, 0, &hChannel);
+
+    if(CIFX_NO_ERROR != lRet)
+    {
+      printf("Error opening Channel!");
+
+    } else
+    {
+    
+      CHANNEL_INFORMATION tChannelInfo = {{0}};
+
+      /* Channel successfully opened, so query basic information */
+      if( CIFX_NO_ERROR != (lRet = xChannelInfo(hChannel, sizeof(CHANNEL_INFORMATION), &tChannelInfo)))
+      {
+        printf("Error querying system information block\r\n");
+      } else
+      {
+        printf("Communication Channel Info:\r\n");
+        printf("Device Number    : %lu\r\n",(long unsigned int)tChannelInfo.ulDeviceNumber);
+        printf("Serial Number    : %lu\r\n",(long unsigned int)tChannelInfo.ulSerialNumber);
+        printf("Firmware         : %s\r\n", tChannelInfo.abFWName);
+        printf("FW Version       : %u.%u.%u build %u\r\n", 
+                tChannelInfo.usFWMajor,
+                tChannelInfo.usFWMinor,
+                tChannelInfo.usFWRevision,
+                tChannelInfo.usFWBuild);
+        printf("FW Date          : %02u/%02u/%04u\r\n", 
+                tChannelInfo.bFWMonth,
+                tChannelInfo.bFWDay,
+                tChannelInfo.usFWYear);
+
+        printf("Mailbox Size     : %lu\r\n",(long unsigned int)tChannelInfo.ulMailboxSize);
+      }
+    }
+  }
+  }
 #endif
 
   //***********************************
@@ -804,26 +714,12 @@ int main(int argc, char** argv)
 
   float rpm2pwm  = 255.0 / (2.5 * 2.0*M_PI);
   float cps2rads = 2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
+  float rpm2rads = (2.0*M_PI)/60.0; // converssion from rpm to rads
   //output_data.cpsL = int16_t((input_data.pwmL/rpm2pwm)/cps2rads);
   //output_data.cpsR = int16_t((input_data.pwmR/rpm2pwm)/cps2rads);
 
   ros::Rate loop_rate(config.publishRate); //Desired frequency in Hz
   
-#ifdef NETHAT
-
-  if(CIFX_NO_ERROR == lRet)
-  {
-
-    /* Display version of cifXRTXDrv and cifXToolkit */
-    DisplayDriverInformation();
-  
-    /* Demonstrate communication channel functionality */
-    ChannelDemo();
-
-  }
-
-#endif  
-
   time_old = ros::Time::now(); // Save current time for control period
   
   // Loop
@@ -857,10 +753,90 @@ int main(int argc, char** argv)
       }
     } while (n > 0);
 
-#else
 
+    wL = float(input_data.cpsL)*cps2rads;//2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
+    //wL = -wL; // Opposite sign
+    wR = float(input_data.cpsR)*cps2rads;//2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
+    //wR = -wR; // Opposite sign (already implemented in Arduino)
+    
+    #else
+    
     new_message=1;
 
+#endif
+#ifdef NETHAT
+    //PROEMISA CODE
+    if(CIFX_NO_ERROR == global_lRet){
+
+    CIFXHANDLE hDriver = NULL;
+    int32_t    lRet    = xDriverOpen(&hDriver);
+
+      /* Wait for communication to be established */
+        if( CIFX_DEV_NO_COM_FLAG == ( lRet = xChannelBusState( hChannel, CIFX_BUS_STATE_ON, &ulState, 10 ) ) ){
+          printf("Waiting for Bus communication!\r\n");
+        }
+        else{
+          /* Read Data from network */
+          if(CIFX_NO_ERROR != (lRet = xChannelIORead(hChannel, 0, 0, sizeof(abRecvData), abRecvData, 10))){
+            printf("Error reading IO Data area!\r\n");
+          } else{
+            //printf("IO Read Data:");
+			recvPointer  = 0;
+			
+			// TIPO DE DATOS INPUTS
+			PLC_ByteVida 	= rcv_Byte();
+			Color_Ruedas	= rcv_Byte();
+			Color_Barra 	= rcv_Byte();
+			Color_Circ 	= rcv_Byte();
+			PLC_Senal_Apagado = rcv_Byte();
+			Byte6_IN = rcv_Byte();
+			Word1_IN = rcv_Word();
+			Word2_IN = rcv_Word();
+			Word3_IN = rcv_Word();
+			Word4_IN = rcv_Word();
+			Word5_IN = rcv_Word();
+			Vel_MotorLH = rcv_Word();
+			Vel_MotorRH = rcv_Word();
+			DiametroRuedas = rcv_Word();
+    			DistanciaRuedas = rcv_Word();
+			
+			if((Color_Ruedas != Ctrl_Char_Ruedas || Color_Barra != Ctrl_Char_Barra || Color_Circ != Ctrl_Char_Circ)){
+				Ctrl_Char_Ruedas = Color_Ruedas;
+				Ctrl_Char_Barra = Color_Barra;
+				Ctrl_Char_Circ = Color_Circ;
+				
+				/*mysql_connect();
+				
+				if(mysql1 != NULL){
+					SQL_Data[39] = Color_Ruedas;
+					SQL_Data[56] = Color_Barra;
+					SQL_Data[73] = Color_Circ;
+					if (mysql_query(mysql1, SQL_Data)){
+					fprintf(stderr, "%s\n", mysql_error(mysql1));
+					}
+					
+				}
+				
+				mysql_disconnect();*/
+			}
+			
+			/*if(PLC_Senal_Apagado){
+				printf("Shutting Down...\n");
+				sleep(2);
+				system("sudo shutdown now");
+				exit(0);
+			}*/
+		}
+	
+         wL = float((Vel_MotorLH)/10)*rpm2rads;
+         wR = float((Vel_MotorRH)/10)*rpm2rads;
+         
+         printf("VelMot_RH: %i//VelMot_LH: %i\n",Vel_MotorRH,Vel_MotorLH);
+         printf("WR: %f// WL: %f\n",wR,wL);
+         
+      }
+    }
+    new_message=1;
 #endif
 
     if (new_message ==1 )
@@ -869,12 +845,7 @@ int main(int argc, char** argv)
       time_now = ros::Time::now(); // Save current time for control period
       dt = (time_now - time_old).toSec(); // Time delay is the control period
       time_old = time_now; // Update previous time with current timestamp
-
-      wL = float(input_data.cpsL)*cps2rads;//2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
-      //wL = -wL; // Opposite sign
-      wR = float(input_data.cpsR)*cps2rads;//2.0*(2.0*M_PI/36.0); // rad/s -> encoder*2 [counts/s] * 2*pi [rad/rev] / 36 [counts/rev]
-      //wR = -wR; // Opposite sign (already implemented in Arduino)
-
+        
       // UPDATE ODOMETRY
 
       vL = wL*R;
@@ -892,6 +863,7 @@ int main(int argc, char** argv)
         th += 2.0*M_PI;
 
       // UPDATE PID CONTROL
+      printf("vref: %f// wref: %f\n",vref,wref);
 
       //vLref = twist_msg.linear.x - twist_msg.angular.z * L/2.0;
       //vRref = twist_msg.linear.x + twist_msg.angular.z * L/2.0;
@@ -909,9 +881,18 @@ int main(int argc, char** argv)
 
       //uL = (int16_t) (wLref * rpm2pwm);
       //uR = (int16_t) (wRref * rpm2pwm);
-
-      uL = (int16_t) (wLref + kp*(wLref-wL)) * rpm2pwm;
-      uR = (int16_t) (wRref + kp*(wRref-wR)) * rpm2pwm;
+      
+      
+      uL = (int16_t) (wLref + kp*(wLref-wL));
+      uR = (int16_t) (wRref + kp*(wRref-wR));
+      
+      printf("uR: %f// uL: %f\n",uR,uL);
+      
+      #ifdef ARDUINO
+        uL = uL * rpm2pwm;
+        uR = uR * rpm2pwm;
+      #endif
+      
 
       //uL = uL+(int16_t) kp*(wLref-wL) * rpm2pwm;
       //uR = uR+(int16_t) kp*(wRref-wR) * rpm2pwm;
@@ -922,6 +903,7 @@ int main(int argc, char** argv)
       //output_data.pwmL = uL;
       //output_data.pwmR = uR;
 
+      #ifdef ARDUINO
       if(uL>255)
         output_data.pwmL = 255;
       else if(uL<-255)
@@ -935,6 +917,7 @@ int main(int argc, char** argv)
         output_data.pwmR = -255;
       else
         output_data.pwmR = uR;
+     #endif
 
       //output_data.pwmL = (int16_t)(vref*254);
       //output_data.pwmR = (int16_t)(vref*254);
@@ -987,6 +970,41 @@ int main(int argc, char** argv)
       int n_written = write(fd,cmd.str().c_str(),cmd.str().size());
       //ROS_INFO("%s",cmd.str().c_str());
 #endif
+   #ifdef NETHAT
+     if(CIFX_NO_ERROR == global_lRet)
+  {
+    //PROEMISA CODE
+     /* Wait for communication to be established */
+        if( CIFX_DEV_NO_COM_FLAG == ( lRet = xChannelBusState( hChannel, CIFX_BUS_STATE_ON, &ulState, 10 ) ) ){
+          printf("Waiting for Bus communication!\r\n");
+        }
+        else{
+    /* Write Data to network */
+            if(CIFX_NO_ERROR != (lRet = xChannelIOWrite(hChannel, 0, 0, sizeof(abSendData), abSendData, 10))){
+              printf("Error writing to IO Data area!\r\n");
+            } else{
+			  //printf("IO Write Data:");
+			  sendPointer = 0;
+			  
+			  send_Byte(PLC_ByteVida);
+			  send_Byte(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Word(0);
+			  send_Byte(0);
+			  send_Byte(0);
+			  send_Word(uL*10);
+			  send_Word(uR*10);	  
+			  
+			 }
+	}		    
+    }
+   
+   #endif
 
     //***************************************************
     // PUBLISH DATA
@@ -1026,10 +1044,10 @@ int main(int argc, char** argv)
     odom_msg.pose.covariance[35] = 1.0;
 
     odom_msg.twist.twist.linear.x = v;
-    //odom_msg.twist.twist.linear.y = 0.0;
-    //odom_msg.twist.twist.linear.z = 0.0;
-    odom_msg.twist.twist.linear.y = (float(input_data.cpsL)/rpm2pwm)/cps2rads;
-    odom_msg.twist.twist.linear.z = (float(input_data.cpsR)/rpm2pwm)/cps2rads;
+    odom_msg.twist.twist.linear.y = 0.0;
+    odom_msg.twist.twist.linear.z = 0.0;
+    //odom_msg.twist.twist.linear.y = (float(input_data.cpsL)/rpm2pwm)/cps2rads;
+    //odom_msg.twist.twist.linear.z = (float(input_data.cpsR)/rpm2pwm)/cps2rads;
     odom_msg.twist.twist.angular.x = 0.0;
     odom_msg.twist.twist.angular.y = 0.0;
     odom_msg.twist.twist.angular.z = w;
@@ -1055,6 +1073,7 @@ int main(int argc, char** argv)
     iteration++;
     ros::spinOnce();
     loop_rate.sleep();
+    
   }
 
 #ifdef ARDUINO
@@ -1062,7 +1081,9 @@ int main(int argc, char** argv)
 #endif
 
 #ifdef NETHAT
-  cifXDriverDeinit();
+  xChannelClose(hChannel);
+  xDriverClose(hDriver);
+  //cifXDriverDeinit();
 #endif
   printf("Quitting...\n");
 }
