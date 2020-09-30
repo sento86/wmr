@@ -454,10 +454,10 @@
   </link>
   
   <!-- Simulation sensors -->
-  <xacro:covi_sim_imu/>
+  <!--<xacro:covi_sim_imu/>
   <xacro:covi_sim_laser/>
   <xacro:covi_sim_create/>
-  <xacro:covi_sim_wall_sensors/>
+  <xacro:covi_sim_wall_sensors/>-->
   </xacro:macro>
 
 </robot>

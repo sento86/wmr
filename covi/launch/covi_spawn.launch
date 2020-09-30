@@ -1,0 +1,61 @@
+<?xml version="1.0"?>
+<launch>
+
+  <param name="/use_sim_time" value="true"/>
+
+  <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+  <arg name="gui" default="true" doc="Starts gazebo gui" />
+  <arg name="ns" default=""/>
+  
+  <!-- startup simulated world -->
+  <!--<include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" default="worlds/empty.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>-->
+
+ <include file="$(find gazebo_ros)/launch/empty_world.launch">
+    <arg name="world_name" value="$(find covi)/worlds/empty.world"/>
+    <arg name="paused" value="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+  </include>
+
+<!-- ****************************************************************************** -->
+
+  <!--<arg name="urdf_file" default="$(find xacro)/xacro.py '$(find covi_description)/robots/covi.urdf.xacro'" />-->
+  <arg name="urdf_file" default="$(find xacro)/xacro.py '$(find rosbot_description)/urdf/rosbot.xacro'"/>
+  <param name="robot_description" command="$(arg urdf_file)" />
+
+  <param name="robot/name" value="$(optenv ROBOT covi)"/>
+  <param name="robot/type" value="covi"/>
+
+<!-- ****************************************************************************** -->
+
+  <!-- COVI Driver -->
+  <!--<include file="$(find covi)/launch/covi_node.launch"/>-->
+
+  <!-- Push robot_description to factory and spawn robot in gazebo -->
+  <node name="spawn_robot" pkg="gazebo_ros" type="spawn_model" args="-urdf -x 1 -y 1 -z 0 -R 0 -P 0 -Y 0 -param robot_description -model koby" respawn="false" output="screen" />
+
+<!-- ****************************************************************************** -->
+
+
+  <node pkg="robot_state_publisher" type="robot_state_publisher" name="robot_state_publisher" output="screen">
+    <param name="publish_frequency" type="double" value="50.0" />
+    <!--param name="tf_prefix" type="string" value="" /-->
+  </node>
+
+  <!-- The odometry estimator -->
+   <!--<node pkg="robot_pose_ekf" type="robot_pose_ekf" name="robot_pose_ekf">
+    <param name="freq" value="50.0"/>
+    <param name="sensor_timeout" value="1.0"/>
+    <param name="publish_tf" value="true"/>
+    <param name="odom_used" value="true"/>
+    <param name="imu_used" value="false"/>
+    <param name="vo_used" value="false"/>
+    <param name="output_frame" value="odom"/>-->
+    <!--<remap from="imu_data" to="camera/accel/sample"/>-->
+    <!--<remap from="imu_data" to="camera/gyro/sample"/>-->
+  <!--</node>-->
+  
+</launch>

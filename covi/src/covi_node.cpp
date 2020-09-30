@@ -147,10 +147,12 @@ geometry_msgs::TransformStamped t;
 
 ros::Time time_now, time_old;
 
+#ifdef NETHAT
 // PROEMISA DEFINITIONS
 CIFXHANDLE hChannel = NULL;
 CIFXHANDLE hDriver = NULL;
 int32_t    lRet;
+#endif
 
 struct struct_config
 {
